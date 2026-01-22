@@ -53,14 +53,23 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../dist')));
+// Serve static files in production (only if SERVE_FRONTEND is true)
+// This is disabled on Render backend deployment
+if (process.env.NODE_ENV === 'production' && process.env.SERVE_FRONTEND !== 'false') {
+  const distPath = path.join(__dirname, '../dist');
   
-  // Handle SPA routing - send all non-API requests to index.html
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
-  });
+  // Check if dist directory exists before serving
+  if (require('fs').existsSync(distPath)) {
+    app.use(express.static(distPath));
+    
+    // Handle SPA routing - send all non-API requests to index.html
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+    console.log('Serving frontend from dist directory');
+  } else {
+    console.log('Frontend dist directory not found - API only mode');
+  }
 }
 
 app.listen(PORT, () => {
