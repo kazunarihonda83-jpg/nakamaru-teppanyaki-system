@@ -7,8 +7,8 @@ import { existsSync } from 'fs';
 export function initDatabase() {
   // Vercel環境では/tmpディレクトリを使用（ただし永続性なし）
   const dbPath = process.env.VERCEL 
-    ? join(tmpdir(), 'order_management.db')
-    : join(process.cwd(), 'order_management.db');
+    ? join(tmpdir(), 'ncn-win-order.db')
+    : join(process.cwd(), 'ncn-win-order.db');
   
   console.log('Initializing database at:', dbPath);
   

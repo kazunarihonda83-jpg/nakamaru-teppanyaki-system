@@ -319,6 +319,16 @@ function generateDocumentHTML(document, items, isPreview = false) {
       .footer-actions { display: none !important; }
     }
   </style>
+  ${!isPreview ? `
+  <script>
+    // PDF出力時に自動的に印刷ダイアログを開く
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    });
+  </script>
+  ` : ''}
 </head>
 <body>
   <div class="page">
@@ -331,7 +341,8 @@ function generateDocumentHTML(document, items, isPreview = false) {
           <div class="company-info">
             〒252-0241 神奈川県相模原市中央区横山台2-9-8コーポ栗山103<br>
             TEL: 042-704-9657<br>
-            Email: takui.n@icloud.com
+            Email: takui.n@icloud.com<br>
+            HP: <a href="https://tabelog.com/kanagawa/A1407/A140701/14058526/" style="color: inherit;">https://tabelog.com/kanagawa/A1407/A140701/14058526/</a>
           </div>
         </div>
         <div class="header-right">
