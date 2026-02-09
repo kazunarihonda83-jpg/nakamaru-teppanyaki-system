@@ -29,31 +29,32 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      background: '#e8e8e8'
     }}>
       <div style={{
         background: 'white',
-        padding: '50px 60px',
-        borderRadius: '12px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-        width: '450px',
+        padding: '60px 80px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        width: '500px',
         maxWidth: '90%'
       }}>
         {/* Title */}
         <h1 style={{
           textAlign: 'center',
-          marginBottom: '10px',
-          color: '#2c5aa0',
-          fontSize: '32px',
+          marginBottom: '8px',
+          color: '#2563ab',
+          fontSize: '36px',
           fontWeight: '700',
-          letterSpacing: '2px'
+          letterSpacing: '3px'
         }}>SYSTEM CLOUD</h1>
         
         <p style={{
           textAlign: 'center',
-          marginBottom: '40px',
+          marginBottom: '50px',
           color: '#333',
-          fontSize: '16px'
+          fontSize: '18px',
+          fontWeight: '400'
         }}>ログインする</p>
 
         {error && (
@@ -72,71 +73,43 @@ export default function Login() {
 
         <form onSubmit={handleSubmit}>
           {/* Email Field */}
-          <div style={{ marginBottom: '25px' }}>
-            <div style={{
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              <span style={{
-                position: 'absolute',
-                left: '15px',
-                color: '#aaa',
-                fontSize: '18px'
-              }}>📧</span>
-              <input 
-                type="text" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="メールアドレス"
-                style={{
-                  width: '100%',
-                  padding: '15px 15px 15px 45px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '6px',
-                  fontSize: '15px',
-                  outline: 'none',
-                  transition: 'border-color 0.3s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#2c5aa0'}
-                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-              />
-            </div>
+          <div style={{ marginBottom: '20px' }}>
+            <input 
+              type="text" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="メールアドレス"
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                border: '1px solid #d0d0d0',
+                borderRadius: '4px',
+                fontSize: '16px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                color: '#333'
+              }}
+            />
           </div>
 
           {/* Password Field */}
-          <div style={{ marginBottom: '30px' }}>
-            <div style={{
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              <span style={{
-                position: 'absolute',
-                left: '15px',
-                color: '#aaa',
-                fontSize: '18px'
-              }}>🔒</span>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="パスワード"
-                style={{
-                  width: '100%',
-                  padding: '15px 15px 15px 45px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '6px',
-                  fontSize: '15px',
-                  outline: 'none',
-                  transition: 'border-color 0.3s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#2c5aa0'}
-                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-              />
-            </div>
+          <div style={{ marginBottom: '35px' }}>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="パスワード"
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                border: '1px solid #d0d0d0',
+                borderRadius: '4px',
+                fontSize: '16px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                color: '#333'
+              }}
+            />
           </div>
 
           {/* Login Button */}
@@ -144,19 +117,16 @@ export default function Login() {
             type="submit" 
             style={{
               width: '100%',
-              padding: '15px',
-              background: '#2c5aa0',
+              padding: '16px',
+              background: '#2563ab',
               color: 'white',
               border: 'none',
-              borderRadius: '6px',
+              borderRadius: '4px',
               cursor: 'pointer',
               fontSize: '16px',
-              fontWeight: '600',
-              transition: 'background 0.3s',
-              marginBottom: '20px'
+              fontWeight: '500',
+              marginBottom: '25px'
             }}
-            onMouseOver={(e) => e.target.style.background = '#234a87'}
-            onMouseOut={(e) => e.target.style.background = '#2c5aa0'}
           >
             ログインする
           </button>
@@ -166,13 +136,10 @@ export default function Login() {
             <a 
               href="#" 
               style={{
-                color: '#3498db',
+                color: '#4da6ff',
                 textDecoration: 'none',
-                fontSize: '14px',
-                transition: 'color 0.3s'
+                fontSize: '14px'
               }}
-              onMouseOver={(e) => e.target.style.color = '#2980b9'}
-              onMouseOut={(e) => e.target.style.color = '#3498db'}
             >
               パスワードを忘れた方はこちら
             </a>
