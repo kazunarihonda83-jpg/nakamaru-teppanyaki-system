@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: ['3003-iwz00ie3gdkhvxpx2ni1z-82b888ba.sandbox.novita.ai', '.sandbox.novita.ai'],
     proxy: {
       '/api': {
-        target: 'http://localhost:5002',
+        target: 'http://localhost:5003',
         changeOrigin: true,
       },
     },
