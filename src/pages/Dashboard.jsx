@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Users, FileText, ShoppingCart, TrendingUp, TrendingDown, Package, AlertCircle } from 'lucide-react';
+import { BarChart3, Users, FileText, ShoppingCart, TrendingUp, TrendingDown, Package, AlertCircle, Bell, ExternalLink } from 'lucide-react';
 import api from '../utils/api';
 
 export default function Dashboard() {
+  // お知らせデータ
+  const [announcements] = useState([
+    {
+      id: 1,
+      date: '2023.06.08',
+      title: '初期設定についてのお知らせ',
+      link: '#'
+    }
+  ]);
   const [stats, setStats] = useState({
     totalCustomers: 0,
     totalSuppliers: 0,
@@ -131,9 +140,67 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
+      <h1 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px', fontSize: '24px', color: '#333' }}>
         <BarChart3 size={32} /> ダッシュボード
       </h1>
+
+      {/* お知らせセクション */}
+      <div style={{ 
+        background: 'white', 
+        padding: '30px', 
+        borderRadius: '8px', 
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        marginBottom: '30px'
+      }}>
+        <h2 style={{ 
+          fontSize: '20px', 
+          fontWeight: '600', 
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <Bell size={24} color="#2563ab" />
+          お知らせ
+        </h2>
+        
+        {announcements.map((announcement) => (
+          <div 
+            key={announcement.id}
+            style={{
+              padding: '15px 0',
+              borderBottom: '1px solid #e8e8e8',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <span style={{ 
+                fontSize: '14px', 
+                color: '#666',
+                minWidth: '90px'
+              }}>
+                {announcement.date}
+              </span>
+              <a 
+                href={announcement.link}
+                style={{
+                  color: '#2563ab',
+                  textDecoration: 'none',
+                  fontSize: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                {announcement.title}
+                <ExternalLink size={14} />
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* 統計カード */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
