@@ -1,11 +1,22 @@
 services:
   - type: web
-    name: tsudoi-backend
+    name: menya-nishiki-backend
     env: node
+    region: singapore
+    plan: starter
+    branch: menya-nishiki-main
     buildCommand: npm install
     startCommand: node server/index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: 5003
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SERVE_FRONTEND
+        value: false
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1
