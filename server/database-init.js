@@ -288,6 +288,75 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (created_by) REFERENCES administrators (id)
     );
+
+    -- 受注取引テーブル
+    CREATE TABLE IF NOT EXISTS order_receipts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      receipt_number TEXT UNIQUE NOT NULL,
+      customer_id INTEGER NOT NULL,
+      order_date DATE NOT NULL,
+      delivery_date DATE,
+      status TEXT DEFAULT 'pending',
+      subtotal REAL DEFAULT 0,
+      tax_amount REAL DEFAULT 0,
+      total_amount REAL DEFAULT 0,
+      payment_status TEXT DEFAULT 'unpaid',
+      payment_date DATE,
+      notes TEXT,
+      created_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES customers (id),
+      FOREIGN KEY (created_by) REFERENCES administrators (id)
+    );
+
+    -- 受注取引明細テーブル
+    CREATE TABLE IF NOT EXISTS order_receipt_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_receipt_id INTEGER NOT NULL,
+      item_name TEXT NOT NULL,
+      description TEXT,
+      quantity REAL NOT NULL,
+      unit_price REAL NOT NULL,
+      tax_rate REAL DEFAULT 10.0,
+      amount REAL NOT NULL,
+      FOREIGN KEY (order_receipt_id) REFERENCES order_receipts (id) ON DELETE CASCADE
+    );
+
+    -- 現金出納帳テーブル
+    CREATE TABLE IF NOT EXISTS cash_book (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      transaction_date DATE NOT NULL,
+      transaction_type TEXT NOT NULL,
+      category TEXT,
+      description TEXT NOT NULL,
+      amount REAL NOT NULL,
+      balance REAL NOT NULL,
+      reference_type TEXT,
+      reference_id INTEGER,
+      created_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by) REFERENCES administrators (id)
+    );
+
+    -- 税額控除帳テーブル
+    CREATE TABLE IF NOT EXISTS tax_deductions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      transaction_date DATE NOT NULL,
+      supplier_name TEXT NOT NULL,
+      invoice_number TEXT,
+      tax_rate REAL NOT NULL,
+      taxable_amount REAL NOT NULL,
+      tax_amount REAL NOT NULL,
+      total_amount REAL NOT NULL,
+      category TEXT,
+      notes TEXT,
+      reference_type TEXT,
+      reference_id INTEGER,
+      created_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by) REFERENCES administrators (id)
+    );
   `);
 
   // Create default accounts if they don't exist

@@ -1,332 +1,277 @@
 import { useState } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Upload, FileText, Download, AlertCircle } from 'lucide-react';
+import api from '../utils/api';
 
 export default function OrderReceiptsUpload() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState(null);
-  const [dragActive, setDragActive] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileSelect = (selectedFile) => {
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // CSVまたはExcelファイルのみ受け付ける
-      const allowedTypes = [
-        'text/csv',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      ];
-      
-      if (allowedTypes.includes(selectedFile.type) || selectedFile.name.endsWith('.csv')) {
-        setFile(selectedFile);
-        setUploadResult(null);
-      } else {
-        alert('CSVまたはExcelファイルを選択してください');
+      if (!selectedFile.name.endsWith('.csv')) {
+        setError('CSVファイルを選択してください');
+        return;
       }
-    }
-  };
-
-  const handleFileInput = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
+      setFile(selectedFile);
+      setError('');
+      setResult(null);
     }
   };
 
   const handleUpload = async () => {
     if (!file) {
-      alert('ファイルを選択してください');
+      setError('ファイルを選択してください');
       return;
     }
 
-    setUploading(true);
-
     try {
-      // TODO: APIエンドポイントを実装後に修正
-      // const formData = new FormData();
-      // formData.append('file', file);
-      // const response = await api.post('/order-receipts/upload', formData);
+      setUploading(true);
+      setError('');
+      setResult(null);
 
-      // 仮の処理
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setUploadResult({
-        success: true,
-        message: 'アップロードが完了しました',
-        imported: 10,
-        errors: 0
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await api.post('/order-receipts/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      
+
+      setResult(response.data);
       setFile(null);
-    } catch (error) {
-      console.error('アップロードエラー:', error);
-      setUploadResult({
-        success: false,
-        message: 'アップロードに失敗しました',
-        error: error.message
-      });
+      // Reset file input
+      document.getElementById('file-input').value = '';
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError(err.response?.data?.error || 'アップロードに失敗しました');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleDownloadTemplate = () => {
-    // CSVテンプレートをダウンロード
-    const csvContent = "受注番号,顧客名,受注日,納品予定日,商品名,数量,単価,金額\n" +
-                      "OR-2026-001,サンプル株式会社,2026-02-01,2026-02-05,商品A,10,1000,10000\n";
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const downloadTemplate = () => {
+    // CSV template
+    const template = `receipt_number,customer_name,order_date,delivery_date,status,subtotal,payment_status,payment_date,notes
+OR-2026-001,株式会社サンプル,2026-02-01,2026-02-05,pending,100000,unpaid,,テストデータ
+OR-2026-002,サンプル商事,2026-02-03,2026-02-07,delivered,50000,paid,2026-02-07,`;
+
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', '受注取引テンプレート.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = 'order_receipts_template.csv';
     link.click();
-    document.body.removeChild(link);
   };
 
   return (
-    <div>
-      <h1 style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '10px', 
-        marginBottom: '30px',
-        fontSize: '24px',
-        color: '#333'
-      }}>
-        <Upload size={32} />
-        受注取引一覧アップロード
-      </h1>
+    <div style={{ padding: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <Upload size={24} />
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>受注取引一覧アップロード</h1>
+      </div>
 
-      {/* 説明 */}
       <div style={{
-        background: '#e3f2fd',
-        padding: '20px',
+        backgroundColor: 'white',
         borderRadius: '8px',
-        marginBottom: '30px',
-        border: '1px solid #90caf9'
+        padding: '30px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        maxWidth: '800px',
+        margin: '0 auto'
       }}>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-          <AlertCircle size={20} color="#1976d2" style={{ flexShrink: 0, marginTop: '2px' }} />
-          <div>
-            <div style={{ fontWeight: '600', marginBottom: '8px', color: '#1565c0' }}>
-              CSVファイルまたはExcelファイルをアップロードできます
-            </div>
-            <div style={{ fontSize: '14px', color: '#1976d2', lineHeight: '1.6' }}>
-              • ファイル形式: CSV (.csv) または Excel (.xlsx, .xls)<br />
-              • 最大ファイルサイズ: 5MB<br />
-              • テンプレートをダウンロードして、データを入力してアップロードしてください
+        {/* Instructions */}
+        <div style={{
+          backgroundColor: '#eff6ff',
+          border: '1px solid #bfdbfe',
+          borderRadius: '6px',
+          padding: '16px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'start', gap: '10px' }}>
+            <AlertCircle size={20} style={{ color: '#3b82f6', flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600', color: '#1e40af' }}>
+                CSVアップロードについて
+              </h3>
+              <ul style={{ margin: '0', paddingLeft: '20px', color: '#1e40af', fontSize: '14px' }}>
+                <li>UTF-8形式のCSVファイルのみ対応しています</li>
+                <li>顧客名は既存の顧客マスタに登録されている名前を使用してください</li>
+                <li>日付はYYYY-MM-DD形式で入力してください</li>
+                <li>ステータスは pending, processing, shipped, delivered, cancelled のいずれかを指定してください</li>
+                <li>支払状況は unpaid, partial, paid のいずれかを指定してください</li>
+              </ul>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* テンプレートダウンロード */}
-      <div style={{
-        background: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        marginBottom: '30px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-      }}>
-        <h3 style={{ marginBottom: '15px', fontSize: '16px', fontWeight: '600' }}>
-          テンプレートダウンロード
-        </h3>
-        <button
-          onClick={handleDownloadTemplate}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 20px',
-            background: '#f5f5f5',
-            border: '1px solid #e0e0e0',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          <FileText size={18} />
-          CSVテンプレートをダウンロード
-        </button>
-      </div>
-
-      {/* ファイルアップロード */}
-      <div style={{
-        background: 'white',
-        padding: '30px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-      }}>
-        <h3 style={{ marginBottom: '20px', fontSize: '16px', fontWeight: '600' }}>
-          ファイルアップロード
-        </h3>
-
-        {/* ドラッグ&ドロップエリア */}
-        <div
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          style={{
-            border: `2px dashed ${dragActive ? '#2563ab' : '#e0e0e0'}`,
-            borderRadius: '8px',
-            padding: '40px',
-            textAlign: 'center',
-            background: dragActive ? '#f0f7ff' : '#fafafa',
-            transition: 'all 0.3s',
-            marginBottom: '20px'
-          }}
-        >
-          <Upload 
-            size={48} 
-            color={dragActive ? '#2563ab' : '#999'} 
-            style={{ marginBottom: '15px' }}
-          />
-          <div style={{ marginBottom: '10px', fontSize: '16px', color: '#333' }}>
-            ファイルをドラッグ&ドロップ
-          </div>
-          <div style={{ marginBottom: '15px', fontSize: '14px', color: '#999' }}>
-            または
-          </div>
-          <label>
-            <input
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileInput}
-              style={{ display: 'none' }}
-            />
-            <span style={{
-              display: 'inline-block',
-              padding: '10px 24px',
-              background: '#2563ab',
+        {/* Template Download */}
+        <div style={{ marginBottom: '30px' }}>
+          <button
+            onClick={downloadTemplate}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              backgroundColor: '#10b981',
               color: 'white',
+              border: 'none',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '14px',
               fontWeight: '500'
-            }}>
-              ファイルを選択
-            </span>
-          </label>
+            }}
+          >
+            <Download size={18} />
+            テンプレートをダウンロード
+          </button>
         </div>
 
-        {/* 選択されたファイル */}
-        {file && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '15px',
-            background: '#f5f5f5',
-            borderRadius: '6px',
-            marginBottom: '20px'
+        {/* File Upload */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#374151'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <FileText size={20} color="#2563ab" />
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '500' }}>{file.name}</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>
-                  {(file.size / 1024).toFixed(2)} KB
-                </div>
-              </div>
+            CSVファイルを選択
+          </label>
+          <input
+            id="file-input"
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '10px',
+              border: '2px dashed #d1d5db',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          />
+          {file && (
+            <div style={{
+              marginTop: '8px',
+              padding: '8px 12px',
+              backgroundColor: '#f3f4f6',
+              borderRadius: '4px',
+              fontSize: '14px',
+              color: '#374151'
+            }}>
+              <FileText size={16} style={{ display: 'inline', marginRight: '8px' }} />
+              {file.name} ({(file.size / 1024).toFixed(2)} KB)
             </div>
-            <button
-              onClick={() => setFile(null)}
-              style={{
-                padding: '6px',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <X size={20} color="#999" />
-            </button>
+          )}
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fecaca',
+            borderRadius: '6px',
+            marginBottom: '20px',
+            color: '#991b1b',
+            fontSize: '14px'
+          }}>
+            {error}
           </div>
         )}
 
-        {/* アップロードボタン */}
+        {/* Success Result */}
+        {result && (
+          <div style={{
+            padding: '16px',
+            backgroundColor: result.errorCount > 0 ? '#fef3c7' : '#d1fae5',
+            border: `1px solid ${result.errorCount > 0 ? '#fde68a' : '#a7f3d0'}`,
+            borderRadius: '6px',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{
+              margin: '0 0 12px 0',
+              fontSize: '16px',
+              fontWeight: '600',
+              color: result.errorCount > 0 ? '#92400e' : '#065f46'
+            }}>
+              アップロード結果
+            </h3>
+            <div style={{ fontSize: '14px', color: result.errorCount > 0 ? '#92400e' : '#065f46' }}>
+              <p style={{ margin: '4px 0' }}>成功: {result.successCount}件</p>
+              <p style={{ margin: '4px 0' }}>失敗: {result.errorCount}件</p>
+            </div>
+            {result.errors && result.errors.length > 0 && (
+              <div style={{ marginTop: '12px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>エラー詳細:</h4>
+                <div style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  {result.errors.map((err, idx) => (
+                    <div key={idx} style={{
+                      padding: '6px 8px',
+                      backgroundColor: 'white',
+                      borderRadius: '4px',
+                      marginBottom: '4px',
+                      fontSize: '13px'
+                    }}>
+                      <strong>{err.row}:</strong> {err.error}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Upload Button */}
         <button
           onClick={handleUpload}
           disabled={!file || uploading}
           style={{
             width: '100%',
             padding: '12px',
-            background: (!file || uploading) ? '#e0e0e0' : '#2563ab',
+            backgroundColor: !file || uploading ? '#9ca3af' : '#3b82f6',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
-            cursor: (!file || uploading) ? 'not-allowed' : 'pointer',
-            fontSize: '15px',
-            fontWeight: '500'
+            cursor: !file || uploading ? 'not-allowed' : 'pointer',
+            fontSize: '16px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
           }}
         >
-          {uploading ? 'アップロード中...' : 'アップロード'}
+          {uploading ? (
+            <>
+              <div style={{
+                width: '16px',
+                height: '16px',
+                border: '2px solid white',
+                borderTopColor: 'transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              アップロード中...
+            </>
+          ) : (
+            <>
+              <Upload size={20} />
+              アップロード
+            </>
+          )}
         </button>
-
-        {/* アップロード結果 */}
-        {uploadResult && (
-          <div style={{
-            marginTop: '20px',
-            padding: '15px',
-            borderRadius: '6px',
-            background: uploadResult.success ? '#e8f5e9' : '#ffebee',
-            border: `1px solid ${uploadResult.success ? '#66bb6a' : '#ef5350'}`
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '10px',
-              marginBottom: '10px'
-            }}>
-              {uploadResult.success ? (
-                <CheckCircle size={20} color="#66bb6a" />
-              ) : (
-                <AlertCircle size={20} color="#ef5350" />
-              )}
-              <div style={{ 
-                fontWeight: '600', 
-                color: uploadResult.success ? '#2e7d32' : '#c62828'
-              }}>
-                {uploadResult.message}
-              </div>
-            </div>
-            {uploadResult.success && (
-              <div style={{ fontSize: '14px', color: '#2e7d32' }}>
-                {uploadResult.imported}件のデータをインポートしました
-              </div>
-            )}
-            {uploadResult.error && (
-              <div style={{ fontSize: '14px', color: '#c62828' }}>
-                エラー: {uploadResult.error}
-              </div>
-            )}
-          </div>
-        )}
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
